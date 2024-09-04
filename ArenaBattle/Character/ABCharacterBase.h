@@ -6,6 +6,15 @@
 #include "GameFramework/Character.h"
 #include "ABCharacterBase.generated.h"
 
+class UABCharacterControllData;
+
+UENUM()
+enum class ECharacterControlType : uint8
+{
+	Shoulder,
+	Quater
+};
+
 UCLASS()
 class ARENABATTLE_API AABCharacterBase : public ACharacter
 {
@@ -14,4 +23,10 @@ class ARENABATTLE_API AABCharacterBase : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AABCharacterBase();
+
+protected:
+	virtual void SetCharacterControlData(const UABCharacterControllData* CharacterControlData);
+
+	UPROPERTY(EditAnywhere, Category = CharacterControl, Meta = (AllowPrivateAcess = "true"))
+	TMap<ECharacterControlType, UABCharacterControllData*> CharacterControlManager;
 };
