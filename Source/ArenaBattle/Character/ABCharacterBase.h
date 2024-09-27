@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -36,7 +36,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 	TObjectPtr<class UAnimMontage> ComboActionMontage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack, Meta = (AllowPirvateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UABComboActionData> ComboActionData;
 
 	void ProcessComboCommand();
@@ -53,4 +53,19 @@ protected:
 // Attack Hit Section
 private:
 	virtual void AttackHitCheck() override;
+
+	// EventInstigator : 가해자, DamageCauser : 가해자의 무기나 폰 액터
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+// Dead Section
+protected:
+	virtual void SetDead();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAcess = "true"))
+	TObjectPtr<class UAnimMontage> DeadActionMontage;
+
+	float DeadEventDelayTime = 5.0f;
+
+private:
+	void PlayDeadAnimation();
 };

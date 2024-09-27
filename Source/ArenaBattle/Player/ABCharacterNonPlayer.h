@@ -13,5 +13,7 @@ UCLASS()
 class ARENABATTLE_API AABCharacterNonPlayer : public AABCharacterBase
 {
 	GENERATED_BODY()
-	
+
+private:
+	virtual void SetDead() override final;
 };
