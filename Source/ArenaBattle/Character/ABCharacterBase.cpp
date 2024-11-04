@@ -7,8 +7,11 @@
 #include "Character/ABCharacterControllData.h"
 #include "Animation/AnimMontage.h"
 #include "ABComboActionData.h"
+#include "CharacterStat/ABCharacterStatComponent.h"
+#include "UI/ABWidgetComponent.h"
 #include "Physics/ABCollision.h"
 #include "Engine/DamageEvents.h"
+#include "UI/ABHpBarWidget.h"
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -65,6 +68,23 @@ AABCharacterBase::AABCharacterBase()
 	{
 		DeadActionMontage = DeadActionMontageRef.Object;
 	}
+	
+	// Stat Component
+	Stat = CreateDefaultSubobject<UABCharacterStatComponent>(TEXT("Stat"));
+	
+	// Widget Component
+	// íŠ¸ëœìŠ¤í¼ì„ ê°€ì§€ê³  ìˆëŠ” ì»´í¬ë„ŒíŠ¸ì´ë¯€ë¡œ SetupAttachmentë¡œ íŠ¸ëœìŠ¤í¼ ì„¤ì •
+	// ì• ë‹ˆë©”ì´ì…˜ ë¸”ë£¨í”„ë¦°íŠ¸ì™€ ìœ ì‚¬í•˜ê²Œ í´ë˜ìŠ¤ ì •ë³´ë¥¼ ë“±ë¡í•´ì„œ BeginPlayê°€ ì‹¤í–‰ë˜ë©´ í´ë˜ìŠ¤ ì •ë³´ë¡œë¶€í„° ì¸ìŠ¤í„´ìŠ¤ê°€ ìƒì„±ë˜ëŠ” í˜•íƒœ
+	HpBar = CreateDefaultSubobject<UABWidgetComponent>(TEXT("Widget"));
+	HpBar->SetupAttachment(GetMesh());
+	HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/ArenaBattle/UI/WBP_HpBar.WBP_HpBar_C"));
+	if(HpBarWidgetRef.Class){
+		HpBar->SetWidgetClass(HpBarWidgetRef.Class);
+		HpBar->SetWidgetSpace(EWidgetSpace::Screen); // ìœ„ì ¯ì˜ í˜•íƒœë¥¼ 2Dë¡œ ì„¤ì •
+		HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
+		HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }
 
 void AABCharacterBase::SetCharacterControlData(const UABCharacterControllData* CharacterControlData)
@@ -95,7 +115,7 @@ void AABCharacterBase::ComboActionBegin()
 {
 	CurrentCombo = 1;
 
-	// ÀÌµ¿ ±â´É ºñÈ°¼ºÈ­
+	// ì´ë™ ê¸°ëŠ¥ ë¹„í™œì„±í™”
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
 	const float AttackSpeedRate = 1.0f;
@@ -152,8 +172,8 @@ void AABCharacterBase::ComboCheck()
 void AABCharacterBase::AttackHitCheck()
 {
 	FHitResult OutHitResult;
-	// FCollisionQueryParamsÀÇ »ı¼ºÀÚ µÎ¹øÂ° ¸Å°³º¯¼ö bInTraceComplex´Â Ä¸½¶ÀÌ³ª ±¸ °°Àº º¹ÀâÇÑ Ãæµ¹Ã¼°¡ ÇÊ¿äÇÑ °æ¿ì »ç¿ëÇÏ¿© Á¤¹Ğµµ¸¦ ³ôÀÓ
-	// SCENE_QUERY_STATÀº ¾ğ¸®¾ó ¿£ÁøÀÌ Á¦°øÇÏ´Â ºĞ¼® Åø·Î Attack ÅÂ±×·Î °Ë»öÇÒ ¼ö ÀÖµµ·Ï
+	// FCollisionQueryParamsì˜ ìƒì„±ì ë‘ë²ˆì§¸ ë§¤ê°œë³€ìˆ˜ bInTraceComplexëŠ” ìº¡ìŠì´ë‚˜ êµ¬ ê°™ì€ ë³µì¡í•œ ì¶©ëŒì²´ê°€ í•„ìš”í•œ ê²½ìš° ì‚¬ìš©í•˜ì—¬ ì •ë°€ë„ë¥¼ ë†’ì„
+	// SCENE_QUERY_STATì€ ì–¸ë¦¬ì–¼ ì—”ì§„ì´ ì œê³µí•˜ëŠ” ë¶„ì„ íˆ´ë¡œ Attack íƒœê·¸ë¡œ ê²€ìƒ‰í•  ìˆ˜ ìˆë„ë¡
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
 	const float AttackRange = 40.0f;
@@ -162,7 +182,7 @@ void AABCharacterBase::AttackHitCheck()
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
-	// ÁöÁ¤ÇÑ ¹æÇâÀ¸·Î µµÇüÀ» Åõ»çÇØ Ã¤³Î Á¤º¸¸¦ »ç¿ëÇØ °¨ÁöµÈ Á¤º¸¸¦ ¹İÈ¯
+	// ì§€ì •í•œ ë°©í–¥ìœ¼ë¡œ ë„í˜•ì„ íˆ¬ì‚¬í•´ ì±„ë„ ì •ë³´ë¥¼ ì‚¬ìš©í•´ ê°ì§€ëœ ì •ë³´ë¥¼ ë°˜í™˜
 	bool bIsHitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_ABACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
 	if (bIsHitDetected)
 	{
@@ -175,17 +195,24 @@ void AABCharacterBase::AttackHitCheck()
 	const float CapsuleHalfHeight = AttackRange * 0.5f;
 	const FColor DrawColor = bIsHitDetected ? FColor::Green : FColor::Red;
 
-	// 5¹øÂ° ¸Å°³º¯¼ö´Â ½Ã¼± ¹æÇâÀ¸·Î Ä¸½¶À» È¸Àü
-	// ¸¶Áö¸· µÎ °³ÀÇ ¸Å°³º¯¼ö´Â °è¼ÓÇØ¼­ À¯ÁöÇÒ °ÍÀÎÁö, À¯ÁöÇÏÁö ¾Ê´Â´Ù¸é ¸î ÃÊ µ¿¾È À¯ÁöÇÒ °ÍÀÎÁö
+	// 5ë²ˆì§¸ ë§¤ê°œë³€ìˆ˜ëŠ” ì‹œì„  ë°©í–¥ìœ¼ë¡œ ìº¡ìŠì„ íšŒì „
+	// ë§ˆì§€ë§‰ ë‘ ê°œì˜ ë§¤ê°œë³€ìˆ˜ëŠ” ê³„ì†í•´ì„œ ìœ ì§€í•  ê²ƒì¸ì§€, ìœ ì§€í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ëª‡ ì´ˆ ë™ì•ˆ ìœ ì§€í•  ê²ƒì¸ì§€
 	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 #endif
+}
+
+void AABCharacterBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	Stat->OnHpZero.AddUObject(this, &AABCharacterBase::SetDead);
 }
 
 float AABCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	SetDead();
+	Stat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;
 }
@@ -195,6 +222,7 @@ void AABCharacterBase::SetDead()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);
+	HpBar->SetHiddenInGame(true);
 }
 
 void AABCharacterBase::PlayDeadAnimation()
@@ -202,4 +230,14 @@ void AABCharacterBase::PlayDeadAnimation()
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(DeadActionMontage, 1.0f);
+}
+
+void AABCharacterBase::SetupCharacterWidget(class UABUserWidget* InUserWidget)
+{
+	UABHpBarWidget* HpBarWidget = Cast<UABHpBarWidget>(InUserWidget);
+	if(HpBarWidget){
+		HpBarWidget->setMaxHp(Stat->GetMaxHp());
+		HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
+		Stat->OnHpChanged.AddUObject(HpBarWidget, &UABHpBarWidget::UpdateHpBar);
+	}
 }

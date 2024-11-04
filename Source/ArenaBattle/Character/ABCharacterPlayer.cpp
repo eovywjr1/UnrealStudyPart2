@@ -19,7 +19,7 @@ AABCharacterPlayer::AABCharacterPlayer()
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // ½ºÇÁ¸µ ¾ÏÀÇ ³¡¿¡ ÀÚµ¿À¸·Î ºÎÂø
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // ìŠ¤í”„ë§ ì•”ì˜ ëì— ìë™ìœ¼ë¡œ ë¶€ì°©
 	FollowCamera->bUsePawnControlRotation = false;
 
 	// Input
@@ -84,7 +84,7 @@ void AABCharacterPlayer::SetupPlayerInputComponent(class UInputComponent* Player
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	// EnhancedInputÀ» »ç¿ëÇÏÁö ¾ÊÀ» °æ¿ì ¿¡·¯¸¦ ¹ß»ıÇÏµµ·Ï CastChecked »ç¿ë
+	// EnhancedInputì„ ì‚¬ìš©í•˜ì§€ ì•Šì„ ê²½ìš° ì—ëŸ¬ë¥¼ ë°œìƒí•˜ë„ë¡ CastChecked ì‚¬ìš©
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
@@ -166,7 +166,7 @@ void AABCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterC
 		UInputMappingContext* NewMappingContext = NewCharacterControlData->InputMappingContext;
 		if (NewMappingContext)
 		{
-			Subsystem->AddMappingContext(NewMappingContext, 0); // µÎ ¹øÂ° ¸Å°³º¯¼ö´Â ¿ì¼±¼øÀ§·Î ´Ù¾çÇÑ ÀÔ·ÂÀÌ °ãÄ¥ ¶§ ¿ì¼± ¼øÀ§ ³ôÀº °ÍÀÌ ÀÛµ¿
+			Subsystem->AddMappingContext(NewMappingContext, 0); // ë‘ ë²ˆì§¸ ë§¤ê°œë³€ìˆ˜ëŠ” ìš°ì„ ìˆœìœ„ë¡œ ë‹¤ì–‘í•œ ì…ë ¥ì´ ê²¹ì¹  ë•Œ ìš°ì„  ìˆœìœ„ ë†’ì€ ê²ƒì´ ì‘ë™
 		}
 	}
 

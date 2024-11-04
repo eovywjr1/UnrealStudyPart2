@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/ABAnimationAttackInterface.h"
+#include "Interface/ABCharacterWidgetInterface.h"
 #include "ABCharacterBase.generated.h"
 
 class UABCharacterControllData;
@@ -17,7 +18,7 @@ enum class ECharacterControlType : uint8
 };
 
 UCLASS()
-class ARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface
+class ARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface, public IABCharacterWidgetInterface
 {
 	GENERATED_BODY()
 
@@ -53,6 +54,8 @@ protected:
 // Attack Hit Section
 private:
 	virtual void AttackHitCheck() override;
+	
+	virtual void PostInitializeComponents() override;
 
 	// EventInstigator : 가해자, DamageCauser : 가해자의 무기나 폰 액터
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -68,4 +71,17 @@ protected:
 
 private:
 	void PlayDeadAnimation();
+
+// Stat Section	
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UABCharacterStatComponent> Stat;
+	
+// UI Widget Section
+public:
+	virtual void SetupCharacterWidget(class UABUserWidget* InUserWidget) override;
+	
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UABWidgetComponent> HpBar;
 };

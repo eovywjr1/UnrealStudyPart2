@@ -7,7 +7,7 @@ void AABPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ½ÃÀÛÇÏÀÚ¸¶ÀÚ Æ÷Ä¿½º°¡ ºäÆ÷Æ® ¾ÈÀ¸·Î µé¾î°¡µµ·Ï
+	// ì‹œì‘í•˜ìë§ˆì í¬ì»¤ìŠ¤ê°€ ë·°í¬íŠ¸ ì•ˆìœ¼ë¡œ ë“¤ì–´ê°€ë„ë¡
 	FInputModeGameOnly GameOnlyInputMode;
 	SetInputMode(GameOnlyInputMode);
 }
