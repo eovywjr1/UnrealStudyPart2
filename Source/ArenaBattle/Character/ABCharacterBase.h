@@ -6,7 +6,10 @@
 #include "GameFramework/Character.h"
 #include "Interface/ABAnimationAttackInterface.h"
 #include "Interface/ABCharacterWidgetInterface.h"
+#include "Interface/ABCharacterItemInterface.h"
 #include "ABCharacterBase.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogABCharacter, Log, All);
 
 class UABCharacterControllData;
 
@@ -17,14 +20,32 @@ enum class ECharacterControlType : uint8
 	Quater
 };
 
+DECLARE_DELEGATE_OneParam(FOnTakeItemDelegate, class UABItemData*);
+
+// 델리게이트를 배열로 관리하기 위한 구조체
+USTRUCT(BlueprintType)
+struct FTakeItemDelegateWrapper
+{
+	GENERATED_BODY()
+
+	FTakeItemDelegateWrapper() {}
+	FTakeItemDelegateWrapper(const FOnTakeItemDelegate& InItemDelegate)
+		: ItemDelegate(InItemDelegate)
+	{}
+
+	FOnTakeItemDelegate ItemDelegate;
+};
+
 UCLASS()
-class ARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface, public IABCharacterWidgetInterface
+class ARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface, public IABCharacterWidgetInterface, public IABCharacterItemInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AABCharacterBase();
+	
+	virtual void BeginPlay() override;
 
 protected:
 	virtual void SetCharacterControlData(const UABCharacterControllData* CharacterControlData);
@@ -32,7 +53,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = CharacterControl, Meta = (AllowPrivateAcess = "true"))
 	TMap<ECharacterControlType, UABCharacterControllData*> CharacterControlManager;
 
-// Combo Action Section
+	// Combo Action Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 	TObjectPtr<class UAnimMontage> ComboActionMontage;
@@ -47,20 +68,20 @@ protected:
 	void SetComboCheckTimer();
 	void ComboCheck();
 
-	uint8 CurrentCombo = 0;
+	uint8        CurrentCombo = 0;
 	FTimerHandle ComboTimerHandle;
-	bool bHasNextComboCommand = false;
+	bool         bHasNextComboCommand = false;
 
-// Attack Hit Section
+	// Attack Hit Section
 private:
 	virtual void AttackHitCheck() override;
-	
+
 	virtual void PostInitializeComponents() override;
 
 	// EventInstigator : 가해자, DamageCauser : 가해자의 무기나 폰 액터
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
-// Dead Section
+	// Dead Section
 protected:
 	virtual void SetDead();
 
@@ -72,16 +93,29 @@ protected:
 private:
 	void PlayDeadAnimation();
 
-// Stat Section	
+	// Stat Section	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UABCharacterStatComponent> Stat;
-	
-// UI Widget Section
+
+	// UI Widget Section
 public:
 	virtual void SetupCharacterWidget(class UABUserWidget* InUserWidget) override;
-	
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UABWidgetComponent> HpBar;
+
+	// Item Section
+protected:
+	virtual void TakeItem(class UABItemData* InItemData) override;
+	virtual void DrinkPotion(class UABItemData* InItemData);
+	virtual void EquipWeapon(class UABItemData* InItemData);
+	virtual void ReadScroll(class UABItemData* InItemData);
+	
+	UPROPERTY()
+	TArray<FTakeItemDelegateWrapper> TakeItemActions;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta =(AllowPrivateAccess = "true"))
+	TObjectPtr<class USkeletalMeshComponent> Weapon;
 };
