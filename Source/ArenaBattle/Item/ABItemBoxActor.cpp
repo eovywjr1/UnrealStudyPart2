@@ -3,9 +3,11 @@
 
 #include "Item/ABItemBoxActor.h"
 
+#include "ABItemData.h"
 #include "ShaderPrintParameters.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Engine/AssetManager.h"
 #include "GameFramework/Character.h"
 #include "Interface/ABCharacterItemInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,8 +18,8 @@
 AABItemBoxActor::AABItemBoxActor()
 {
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	Mesh    = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	Effect  = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Effect"));
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Effect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Effect"));
 
 	RootComponent = Trigger;
 	Mesh->SetupAttachment(Trigger);
@@ -60,7 +62,7 @@ void AABItemBoxActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		Destroy();
 		return;
 	}
-	
+
 	if (IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(OtherActor))
 	{
 		OverlappingPawn->TakeItem(Item);
@@ -75,4 +77,25 @@ void AABItemBoxActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 void AABItemBoxActor::OnEffectFinished(UParticleSystemComponent* PSystem)
 {
 	Destroy();
+}
+
+void AABItemBoxActor::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	UAssetManager& AssetManager = UAssetManager::Get();
+
+	TArray<FPrimaryAssetId> Assets;
+	AssetManager.GetPrimaryAssetIdList(TEXT("ABItemData"), Assets);
+	ensure(Assets.Num() > 0);
+
+	const int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+	FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(Assets[RandomIndex]));
+	if (AssetPtr.IsPending())
+	{
+		AssetPtr.LoadSynchronous();
+	}
+
+	Item = Cast<UABItemData>(AssetPtr.Get());
+	ensure(Item);
 }

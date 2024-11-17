@@ -23,6 +23,9 @@ class ARENABATTLE_API UABItemData : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
+	// 식별자 ID 값을 생성
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override { return FPrimaryAssetId("ABItemData", GetFName()); };
+
 	EItemType GetItemType() const { return Type; }
 
 protected:
