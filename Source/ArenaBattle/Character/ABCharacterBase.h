@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterStat/ABCharacterStatComponent.h"
 #include "GameFramework/Character.h"
 #include "Interface/ABAnimationAttackInterface.h"
 #include "Interface/ABCharacterWidgetInterface.h"
@@ -29,6 +30,7 @@ struct FTakeItemDelegateWrapper
 	GENERATED_BODY()
 
 	FTakeItemDelegateWrapper() {}
+
 	FTakeItemDelegateWrapper(const FOnTakeItemDelegate& InItemDelegate)
 		: ItemDelegate(InItemDelegate)
 	{}
@@ -44,7 +46,7 @@ class ARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationA
 public:
 	// Sets default values for this character's properties
 	AABCharacterBase();
-	
+
 	virtual void BeginPlay() override;
 
 protected:
@@ -68,15 +70,16 @@ protected:
 	void SetComboCheckTimer();
 	void ComboCheck();
 
-	uint8        CurrentCombo = 0;
+	uint8 CurrentCombo = 0;
 	FTimerHandle ComboTimerHandle;
-	bool         bHasNextComboCommand = false;
+	bool bHasNextComboCommand = false;
 
 	// Attack Hit Section
+protected:
+	virtual void PostInitializeComponents() override;
+
 private:
 	virtual void AttackHitCheck() override;
-
-	virtual void PostInitializeComponents() override;
 
 	// EventInstigator : 가해자, DamageCauser : 가해자의 무기나 폰 액터
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -93,7 +96,11 @@ protected:
 private:
 	void PlayDeadAnimation();
 
-	// Stat Section	
+	// Stat Section
+public:
+	FORCEINLINE int32 GetCurrentLevel() const { return Stat->GetCurrentLevel(); }
+	FORCEINLINE void SetCurrentLevel(int32 InNewLevel) const { Stat->SetCurrentLevel(InNewLevel); }
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UABCharacterStatComponent> Stat;
@@ -112,10 +119,10 @@ protected:
 	virtual void DrinkPotion(class UABItemData* InItemData);
 	virtual void EquipWeapon(class UABItemData* InItemData);
 	virtual void ReadScroll(class UABItemData* InItemData);
-	
+
 	UPROPERTY()
 	TArray<FTakeItemDelegateWrapper> TakeItemActions;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta =(AllowPrivateAccess = "true"))
 	TObjectPtr<class USkeletalMeshComponent> Weapon;
 };

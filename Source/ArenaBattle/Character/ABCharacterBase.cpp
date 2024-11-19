@@ -22,20 +22,20 @@ AABCharacterBase::AABCharacterBase()
 {
 	// Pawn
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw   = false;
-	bUseControllerRotationRoll  = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
 
 	// Capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.0f, 96.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_ABCAPSULE);
 
 	// Movement
-	GetCharacterMovement()->bOrientRotationToMovement  = true;
-	GetCharacterMovement()->RotationRate               = FRotator(0.0f, 500.0f, 0.0f);
-	GetCharacterMovement()->JumpZVelocity              = 700.0f;
-	GetCharacterMovement()->AirControl                 = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed               = 500.0f;
-	GetCharacterMovement()->MinAnalogWalkSpeed         = 20.0f;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+	GetCharacterMovement()->JumpZVelocity = 700.0f;
+	GetCharacterMovement()->AirControl = 0.35f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
 	// Mesh
@@ -111,10 +111,10 @@ void AABCharacterBase::SetCharacterControlData(const UABCharacterControllData* C
 	bUseControllerRotationYaw = CharacterControlData->bUseControllerRotationYaw;
 
 	// Character
-	UCharacterMovementComponent* CharacterMovementComponent   = GetCharacterMovement();
-	CharacterMovementComponent->bOrientRotationToMovement     = CharacterControlData->bOrientRotationToMovement;
+	UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement();
+	CharacterMovementComponent->bOrientRotationToMovement = CharacterControlData->bOrientRotationToMovement;
 	CharacterMovementComponent->bUseControllerDesiredRotation = CharacterControlData->bUseControllerDesiredRotation;
-	CharacterMovementComponent->RotationRate                  = CharacterControlData->RotationRate;
+	CharacterMovementComponent->RotationRate = CharacterControlData->RotationRate;
 }
 
 void AABCharacterBase::ProcessComboCommand()
@@ -136,8 +136,8 @@ void AABCharacterBase::ComboActionBegin()
 	// 이동 기능 비활성화
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
-	const float    AttackSpeedRate = 1.0f;
-	UAnimInstance* AnimInstance    = GetMesh()->GetAnimInstance();
+	const float AttackSpeedRate = Stat->GetTotalStat().GetAttackSpeed();
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
 
 	FOnMontageEnded EndDelegate;
@@ -162,7 +162,7 @@ void AABCharacterBase::SetComboCheckTimer()
 	const uint8 ComboIndex = CurrentCombo - 1;
 	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
 
-	const float AttackSpeedRate    = 1.0f;
+	const float AttackSpeedRate = Stat->GetTotalStat().GetAttackSpeed();
 	const float ComboEffectiveTime = ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate / AttackSpeedRate;
 	if (ComboEffectiveTime > 0.0f)
 	{
@@ -176,7 +176,7 @@ void AABCharacterBase::ComboCheck()
 
 	if (bHasNextComboCommand)
 	{
-		CurrentCombo            = FMath::Clamp(CurrentCombo + 1, 1, ComboActionData->MaxComboCount);
+		CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, ComboActionData->MaxComboCount);
 		const FName NextSection = *FString::Printf(TEXT("%s%d"), *ComboActionData->MontageSectionNamePrefix, CurrentCombo);
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -194,11 +194,11 @@ void AABCharacterBase::AttackHitCheck()
 	// SCENE_QUERY_STAT은 언리얼 엔진이 제공하는 분석 툴로 Attack 태그로 검색할 수 있도록
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
-	const float   AttackRange  = 40.0f;
-	const float   AttackRadius = 50.0f;
-	const float   AttackDamage = 100.0f;
-	const FVector Start        = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End          = Start + GetActorForwardVector() * AttackRange;
+	const float AttackRange = Stat->GetTotalStat().GetAttackRange();
+	const float AttackRadius = 50.0f;
+	const float AttackDamage = Stat->GetTotalStat().GetAttack();
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
 	// 지정한 방향으로 도형을 투사해 채널 정보를 사용해 감지된 정보를 반환
 	bool bIsHitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_ABACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
@@ -209,9 +209,9 @@ void AABCharacterBase::AttackHitCheck()
 	}
 
 #if ENABLE_DRAW_DEBUG
-	const FVector CapsuleOrigin     = Start + (End - Start) * 0.5f;
-	const float   CapsuleHalfHeight = AttackRange * 0.5f;
-	const FColor  DrawColor         = bIsHitDetected ? FColor::Green : FColor::Red;
+	const FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+	const float CapsuleHalfHeight = AttackRange * 0.5f;
+	const FColor DrawColor = bIsHitDetected ? FColor::Green : FColor::Red;
 
 	// 5번째 매개변수는 시선 방향으로 캡슐을 회전
 	// 마지막 두 개의 매개변수는 계속해서 유지할 것인지, 유지하지 않는다면 몇 초 동안 유지할 것인지
@@ -252,10 +252,9 @@ void AABCharacterBase::PlayDeadAnimation()
 
 void AABCharacterBase::SetupCharacterWidget(class UABUserWidget* InUserWidget)
 {
-	UABHpBarWidget* HpBarWidget = Cast<UABHpBarWidget>(InUserWidget);
-	if (HpBarWidget)
+	if (UABHpBarWidget* HpBarWidget = Cast<UABHpBarWidget>(InUserWidget))
 	{
-		HpBarWidget->setMaxHp(Stat->GetMaxHp());
+		HpBarWidget->setMaxHp(Stat->GetTotalStat().GetMaxHp());
 		HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
 		Stat->OnHpChanged.AddUObject(HpBarWidget, &UABHpBarWidget::UpdateHpBar);
 	}
@@ -279,6 +278,7 @@ void AABCharacterBase::EquipWeapon(class UABItemData* InItemData)
 	if (UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData))
 	{
 		Weapon->SetSkeletalMesh(WeaponItemData->GetSkeletalMesh());
+		Stat->SetModifierStat(WeaponItemData->GetModifierStat());
 	}
 }
 

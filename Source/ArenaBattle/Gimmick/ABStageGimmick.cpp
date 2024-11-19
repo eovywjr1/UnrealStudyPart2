@@ -6,7 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Item/ABItemBoxActor.h"
 #include "Physics/ABCollision.h"
-#include "Player/ABCharacterNonPlayer.h"
+#include "Character/ABCharacterNonPlayer.h"
 
 // Sets default values
 AABStageGimmick::AABStageGimmick()
@@ -53,11 +53,12 @@ AABStageGimmick::AABStageGimmick()
 
 	// Fight Section
 	OpponentClass = AABCharacterNonPlayer::StaticClass();
-	
+
 	// Reward Section
 	RewardBoxClass = AABItemBoxActor::StaticClass();
-	
-	for(const FName& GateSocket : GateSockets){
+
+	for (const FName& GateSocket : GateSockets)
+	{
 		const FVector BoxLocation = Stage->GetSocketLocation(GateSocket) / 2;
 		RewardBoxLocations.Add(GateSocket, BoxLocation);
 	}
@@ -104,7 +105,10 @@ void AABStageGimmick::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedC
 	bool bResult = GetWorld()->OverlapMultiByObjectType(OverlapResults, NewLocation, FQuat::Identity, FCollisionObjectQueryParams::InitType::AllStaticObjects, FCollisionShape::MakeSphere(775.0f), CollisionParam); // 해당 위치에 배치되어 있는지 검사
 	if (bResult == false)
 	{
-		GetWorld()->SpawnActor<AABStageGimmick>(NewLocation, FRotator::ZeroRotator);
+		if (AABStageGimmick* NewGimmick = GetWorld()->SpawnActor<AABStageGimmick>(NewLocation, FRotator::ZeroRotator))
+		{
+			NewGimmick->SetStageNum(CurrentStageNum + 1);
+		}
 	}
 }
 
@@ -206,12 +210,13 @@ void AABStageGimmick::OnOpponentDestroyed(AActor* DestoryedActor)
 
 void AABStageGimmick::OnOpponentSpawn()
 {
-	const FVector SpawnLocation = GetActorLocation() + FVector::UpVector * 88.0f;
-	AActor* OpponentActor = GetWorld()->SpawnActor(OpponentClass, &SpawnLocation, &FRotator::ZeroRotator);
+	const FTransform SpawnTransform(GetActorLocation() + FVector::UpVector * 88.0f);
 
-	if (AABCharacterNonPlayer* ABOpponentCharacter = Cast<AABCharacterNonPlayer>(OpponentActor))
+	if (AABCharacterNonPlayer* ABOpponentCharacter = GetWorld()->SpawnActorDeferred<AABCharacterNonPlayer>(OpponentClass, SpawnTransform))
 	{
 		ABOpponentCharacter->OnDestroyed.AddDynamic(this, &AABStageGimmick::OnOpponentDestroyed);
+		ABOpponentCharacter->SetCurrentLevel(CurrentStageNum);
+		ABOpponentCharacter->FinishSpawning(SpawnTransform);
 	}
 }
 
@@ -231,7 +236,7 @@ void AABStageGimmick::OnRewardTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 			ValidItemBox->Destroy();
 		}
 	}
-	
+
 	SetState(EStageState::NEXT);
 }
 

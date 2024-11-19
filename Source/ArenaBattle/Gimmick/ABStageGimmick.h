@@ -69,7 +69,6 @@ private:
 	EStageState CurrentState = EStageState::READY;
 	
 	// Fight Section
-private:
 	UFUNCTION()
 	void OnOpponentDestroyed(AActor* DestoryedActor);
 	void OnOpponentSpawn();
@@ -83,7 +82,6 @@ private:
 	FTimerHandle OpponentTimerHandle;
 	
 	// Reward Section
-private:
 	UFUNCTION()
 	void OnRewardTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	void SpawnRewardBoxes();
@@ -95,4 +93,12 @@ private:
 	TArray<TWeakObjectPtr<class AABItemBoxActor>> RewardBoxes; // 스테이지 기믹과는 무관하게 스스로 동작하므로 약참조
 	
 	TMap<FName, FVector> RewardBoxLocations;
+	
+	// Stage Stat Section
+public:
+	FORCEINLINE void SetStageNum(int32 InStageNum) { CurrentStageNum = InStageNum; }
+	
+private:
+	UPROPERTY(VIsibleAnywhere, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	int32 CurrentStageNum = 0;
 };
