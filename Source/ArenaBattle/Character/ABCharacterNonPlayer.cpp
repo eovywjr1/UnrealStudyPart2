@@ -3,11 +3,15 @@
 
 #include "ABCharacterNonPlayer.h"
 
+#include "AI/ABAIController.h"
 #include "Engine/AssetManager.h"
 
 AABCharacterNonPlayer::AABCharacterNonPlayer()
 {
 	GetMesh()->SetHiddenInGame(true);
+	
+	AIControllerClass = AABAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void AABCharacterNonPlayer::PostInitializeComponents()
