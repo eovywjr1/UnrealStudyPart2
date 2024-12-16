@@ -7,6 +7,8 @@
 
 // Sets default values for this component's properties
 UABCharacterStatComponent::UABCharacterStatComponent()
+	: CurrentLevel(1),
+	  AttackRadius(50.0f)
 {}
 
 // Called when the game starts

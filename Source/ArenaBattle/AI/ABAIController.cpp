@@ -3,8 +3,10 @@
 
 #include "AI/ABAIController.h"
 
+#include "ABAI.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BlackboardData.h"
 
 AABAIController::AABAIController()
@@ -34,6 +36,8 @@ void AABAIController::RunAI()
 	UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
 	if (UseBlackboard(BBAsset, BlackboardComponent))
 	{
+		Blackboard->SetValueAsVector(BBKEY_HOMEPOS, GetPawn()->GetActorLocation());
+		
 		const bool RunBehvaiorTreeResult = RunBehaviorTree(BTAsset);
 		ensure(RunBehvaiorTreeResult);
 	}

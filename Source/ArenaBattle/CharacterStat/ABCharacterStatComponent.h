@@ -9,14 +9,14 @@
 
 
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float /* CurrentHp */ );
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float /* CurrentHp */);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ARENABATTLE_API UABCharacterStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UABCharacterStatComponent();
 
@@ -30,12 +30,13 @@ public:
 	void SetCurrentLevel(int32 InNewLevel);
 	FORCEINLINE void SetModifierStat(const FABCharacterStat& InModifierStat) { ModifierStat = InModifierStat; }
 	FORCEINLINE FABCharacterStat GetTotalStat() const { return BaseStat + ModifierStat; }
-	
+	FORCEINLINE float GetAttackRadius() const { return AttackRadius; }
+
 	float ApplyDamage(float InDamage);
-	
+
 	FOnHpZeroDelegate OnHpZero;
 	FOnHpChangedDelegate OnHpChanged;
-	
+
 private:
 	void SetHp(float NewHp);
 
@@ -44,13 +45,15 @@ private:
 	// Transient : 디스크에 저장 X
 	UPROPERTY(Transient, VisibleInstanceOnly, Category="Stat")
 	float CurrentHp;
-	
+
 	UPROPERTY(Transient, VisibleInstanceOnly, Category="Stat")
-	int32 CurrentLevel = 1;
-	
+	int32 CurrentLevel;
+
 	UPROPERTY(Transient, VisibleInstanceOnly, Category="Stat", Meta = (AllowPrivateAccess = "true"))
 	FABCharacterStat BaseStat;
-	
+
 	UPROPERTY(Transient, VisibleInstanceOnly, Category="Stat", Meta = (AllowPrivateAccess = "true"))
 	FABCharacterStat ModifierStat;
+
+	float AttackRadius;
 };

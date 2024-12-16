@@ -45,3 +45,38 @@ void AABCharacterNonPlayer::NPCMeshLoadCompleted() const
 
 	NPCMeshHandle->ReleaseHandle();
 }
+
+float AABCharacterNonPlayer::GetAIPatrolRadius()
+{
+	return 800.0f;
+}
+
+float AABCharacterNonPlayer::GetAIDetectRange()
+{
+	return 400.0f;
+}
+
+float AABCharacterNonPlayer::GetAIAttackRange()
+{
+	return Stat->GetTotalStat().GetAttackRange() + Stat->GetAttackRadius() * 2;
+}
+
+float AABCharacterNonPlayer::GetAIAITurnSpeed()
+{
+	return 2.0f;
+}
+
+void AABCharacterNonPlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
+{
+	OnAttackFinished = InOnAttackFinished;
+}
+
+void AABCharacterNonPlayer::AttackByAI()
+{
+	ProcessComboCommand();
+}
+
+void AABCharacterNonPlayer::NotifyComboActionEnd()
+{
+	OnAttackFinished.Execute();
+}
