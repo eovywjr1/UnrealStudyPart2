@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/ABCharacterBase.h"
+#include "Interface/ABCharacterHUDInterface.h"
 #include "ABCharacterPlayer.generated.h"
 
 /**
@@ -14,25 +15,26 @@ struct FInputActionValue;
 class UABCharacterControllData;
 
 UCLASS()
-class ARENABATTLE_API AABCharacterPlayer : public AABCharacterBase
+class ARENABATTLE_API AABCharacterPlayer : public AABCharacterBase, public IABCharacterHUDInterface
 {
 	GENERATED_BODY()
 	
 public:
-	explicit AABCharacterPlayer();
-
-// Camera Section
+	virtual void SetupHUDWidget(class UABHUDWidget* InHUDWidget) override final;
+	
 protected:
+	explicit AABCharacterPlayer();
+	
 	virtual void SetCharacterControlData(const UABCharacterControllData* CharacterControlData) override final;
 
 private:
-	// ¸ÊÇÎ ÄÁÅØ½ºÆ® ÇÒ´çÇÏ´Â ¿ªÇÒ
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ® ï¿½Ò´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½
 	virtual void BeginPlay() override final;
 
-	// ÀÔ·Â ¾×¼Ç°ú Move, Look ÇÔ¼ö¸¦ ¸ÊÇÎ½ÃÄÑÁÖ´Â ¿ªÇÒ
+	// ï¿½Ô·ï¿½ ï¿½×¼Ç°ï¿½ Move, Look ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override final;
 	
-	// Meta ÁöÁ¤ÀÚ¸¦ ¼±¾ðÇÏ¿© private·Î ¼±¾ðÇÑ ¾ð¸®¾ó ¿ÀºêÁ§Æ®¸¦ ºí·çÇÁ¸°Æ®¿¡¼­ Á¢±ÙÇÒ ¼ö ÀÖµµ·Ï ÇÔ
+	// Meta ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ privateï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ð¸®¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USpringArmComponent> CameraBoom;
 

@@ -17,7 +17,7 @@ class ARENABATTLE_API UABHpBarWidget : public UABUserWidget
 public:
 	UABHpBarWidget(const FObjectInitializer& ObjectInitializer);
 
-	FORCEINLINE void setMaxHp(float NewMaxHp) { MaxHp = NewMaxHp; }
+	FORCEINLINE void SetMaxHp(float NewMaxHp) { MaxHp = NewMaxHp; }
 	void UpdateHpBar(float NewCurrentHp);
 	
 private:

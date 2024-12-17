@@ -9,6 +9,21 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Character/ABCharacterControllData.h"
+#include "UI/ABHUDWidget.h"
+
+void AABCharacterPlayer::SetupHUDWidget(UABHUDWidget* InHUDWidget)
+{
+	if (InHUDWidget == nullptr)
+	{
+		return;
+	}
+	
+	InHUDWidget->UpdateStat(Stat->GetBaseStat(), Stat->GetModifierStat());
+	InHUDWidget->UpdateHpBar(Stat->GetCurrentHp());
+	
+	Stat->OnStatChanged.AddUObject(InHUDWidget, &UABHUDWidget::UpdateStat);
+	Stat->OnHpChanged.AddUObject(InHUDWidget, &UABHUDWidget::UpdateHpBar);
+}
 
 AABCharacterPlayer::AABCharacterPlayer()
 {
@@ -124,7 +139,7 @@ void AABCharacterPlayer::QuaterMove(const FInputActionValue& Value)
 
 	float MovementVectorSize = 1.0f;
 	float MovementVectorSizeSqaured = MovementVector.SquaredLength();
-	
+
 	if (MovementVectorSizeSqaured > 1.0f)
 	{
 		MovementVector.Normalize();
